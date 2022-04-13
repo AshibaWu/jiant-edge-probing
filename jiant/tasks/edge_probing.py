@@ -385,3 +385,16 @@ register_task(
     label_file="labels.txt",
     files_by_split={"train": "train.json", "val": "dev.json", "test": "test.json"},
 )(EdgeProbingTask)
+
+
+# Dependency edge labeling on English Web Treebank (UD).
+register_task(
+    "edges-srl-conll",
+    rel_path="edges/conll_srl",
+    label_file="labels.txt",
+    files_by_split={
+        "train": "train.json",
+        "val": "development.json",
+        "test": "test.json",
+    },
+)(EdgeProbingTask)

@@ -26,7 +26,7 @@ if [ -z $PROJECT_DIR ]; then
 fi
 
 THIS_DIR=$(realpath $(dirname $0))
-JIANT_DIR=${THIS_DIR%jiant*}/jiant
+JIANT_DIR=${THIS_DIR%jiant*}/jiant-v1-legacy
 
 all_runs=( ${PROJECT_DIR}/*/run* )
 echo "Found runs:"
