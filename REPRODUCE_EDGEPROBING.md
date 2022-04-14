@@ -161,3 +161,9 @@ After running the python script, you should have following file structure.
 
 # Original BERT Layer probing commit
 https://github.com/nyu-mll/jiant-v1-legacy/commit/44c6780738be1eee9868d35a0f2f96f42ba71aa7
+
+
+# Submit Slurm Jobs
+```
+sbatch --gres=gpu:2 --mem=16000 --ntasks 1 --cpus-per-task 24 --time 10:0:0 jobs.sh
+```
