@@ -10,7 +10,10 @@ export WORD_EMBS_FILE=emb/crawl-300d-2MMM.vec
 ```
 WORD_EMBS_FILE is just a placeholder since we don't need this for bert experiments
 
-## Download and run with test data
+## Env setup
+```conda env create -f environment.yml```
+
+## (Optional) Download and run with test data
 Prepare for test data. Scripts are modified to only process ud data and bert related part.
 ```
 bash get_and_process_all_data.sh
@@ -24,8 +27,13 @@ python probing/retokenize_edge_data.py -t roberta-base probing/data/edges/conll_
 ```
 
 ## Automated scripts to run combination of trainings:
+Run using slurm cluster
 ```
-bash probing.sh
+sbatch slurm_submit.sh
+```
+Run using local machine. You can specify the config file and model
+```
+bash probing.sh -c probing/jiant/config/edgeprobe/edgeprobe_roberta.conf -m roberta-base
 ```
 
 ## Parameters & Training
@@ -63,7 +71,7 @@ python main.py --config_file probing/jiant/config/edgeprobe/edgeprobe_bert.conf 
 # Edge Probing Config
 In the paper, they train the span pooling and MLP classifiers to extract information from the contextual vectors. Here is the settings from jiant-v1-legacy/jiant/config/defaults.conf
 
-I changed the edges-tmpl-large steps to 2K for testing.
+Add more tasks here
 
 ```
 // Edge-Probing Experiments //
@@ -105,6 +113,9 @@ edges-dpr = ${edges-tmpl-small}
 
 edges-rel-semeval = ${edges-tmpl-small}
 edges-rel-tacred = ${edges-tmpl}
+
+// new edge probing tasks
+edges-srl-conll = ${edges-tmpl-large}
 ```
 # Edge Probing Details
 ## Change Probing layer
