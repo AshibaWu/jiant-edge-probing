@@ -1,7 +1,16 @@
 # Reproduce Edge Probing
-The original edge probing folder provides lots of useful information, but after jiant migrated from v1 to v2, I went through some extra steps to rerun the scripts.
+
+This repository can reproduce the results for papers:
+- What do you learn from context? Probing for sentence structure in contextualized word representations ("edge probing")
+- BERT Rediscovers the Classical NLP Pipeline ("BERT layer paper")
+
+The original edge probing repo [jiant-v1-legacy](https://github.com/nyu-mll/jiant-v1-legacy) provides lots of useful information, but after jiant migrated from v1 to v2, I went through some extra steps to rerun the scripts.
 Here are the revised steps you should follow:
 
+## Env setup
+Set up conda environment
+```conda env create -f environment.yml```
+Activate the environment
 ```
 conda activate jiant
 export JIANT_PROJECT_PREFIX=/home/wangchew/jiant-v1-legacy
@@ -9,9 +18,6 @@ export JIANT_DATA_DIR=probing/data
 export WORD_EMBS_FILE=emb/crawl-300d-2MMM.vec
 ```
 WORD_EMBS_FILE is just a placeholder since we don't need this for bert experiments
-
-## Env setup
-```conda env create -f environment.yml```
 
 ## (Optional) Download and run with test data
 Prepare for test data. Scripts are modified to only process ud data and bert related part.
@@ -155,11 +161,24 @@ function bert_at_k_exp() {
     run_exp "jiant/config/edgeprobe/edgeprobe_bert.conf" "${OVERRIDES}"
 }
 ```
-# Output structure
-After running the python script, you should have following file structure.
+
+# Citation
+```bibtex
+@inproceedings{47786,
+title	= {What do you learn from context? Probing for sentence structure in contextualized word representations},
+author	= {Ian Tenney and Patrick Xia and Berlin Chen and Alex Wang and Adam Poliak and R. Thomas McCoy and Najoung Kim and Benjamin Van Durme and Samuel R. Bowman and Dipanjan Das and Ellie Pavlick},
+year	= {2019},
+URL	= {https://openreview.net/forum?id=SJzSgnRcKX},
+booktitle	= {International Conference on Learning Representations}
+}
+
+@article{tenney2019bert,
+  title={BERT rediscovers the classical NLP pipeline},
+  author={Tenney, Ian and Das, Dipanjan and Pavlick, Ellie},
+  journal={arXiv preprint arXiv:1905.05950},
+  year={2019}
+}
+
 ```
 
 
-
-# Original BERT Layer probing commit
-https://github.com/nyu-mll/jiant-v1-legacy/commit/44c6780738be1eee9868d35a0f2f96f42ba71aa7
