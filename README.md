@@ -42,8 +42,6 @@ Run using local machine. You can specify the config file and model
 bash probing.sh -c probing/jiant/config/edgeprobe/edgeprobe_roberta.conf -m roberta-base
 ```
 
-## 
-
 # Parameters & Training
 - transformers_output_mode: there is two mode: "top", and "mix"
 - transformers_max_layer: Maximum layer to return from BERT encoder. Layer 0 is wordpiece embeddings. bert_embeddings_mode will behave as if the BERT encoder is truncated at this layer, so 'top' will return this layer, and 'mix' will return a mix of all layers up to and including this layer. Set to -1 to use all layers. Used for probing experiments.
