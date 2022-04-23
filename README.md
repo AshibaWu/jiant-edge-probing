@@ -4,9 +4,9 @@ This repository can reproduce the results for papers:
 - What do you learn from context? Probing for sentence structure in contextualized word representations ("edge probing")
 - BERT Rediscovers the Classical NLP Pipeline ("BERT layer paper")
 
-The original edge probing repo [jiant-v1-legacy](https://github.com/nyu-mll/jiant-v1-legacy) provides lots of useful information, but after jiant migrated from v1 to v2, I went through some extra steps to rerun the scripts.
-Here are the revised steps you should follow:
+The original edge probing repo [jiant-v1-legacy](https://github.com/nyu-mll/jiant-v1-legacy) provides lots of useful information (check [original jiant readme](JIANT.md) fore more details), but after jiant migrated from v1 to v2, I went through some extra steps to rerun the scripts.
 
+Below are the revised steps you should follow.
 ## Env setup
 Set up conda environment
 ```conda env create -f environment.yml```
