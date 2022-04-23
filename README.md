@@ -1,113 +1,165 @@
-# `jiant` is an nlp toolkit
-
-[![CircleCI](https://circleci.com/gh/nyu-mll/jiant/tree/master.svg?style=svg)](https://circleci.com/gh/nyu-mll/jiant/tree/master) [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/python/black)
-
-## This is the legacy version of `jiant`. If starting a new project, we recommend you use the new version of `jiant` [here](https://github.com/nyu-mll/jiant).
-
-`jiant` is a software toolkit for natural language processing research, designed to facilitate work on multitask learning and transfer learning for sentence understanding tasks.
-
-A few things you might want to know about `jiant`:
-
-- `jiant` is configuration-driven. You can run an enormous variety of experiments by simply writing configuration files. Of course, if you need to add any major new features, you can also easily edit or extend the code.
-- `jiant` contains implementations of strong baselines for the [GLUE](https://gluebenchmark.com) and [SuperGLUE](https://super.gluebenchmark.com/) benchmarks, and it's the recommended starting point for work on these benchmarks.
-- `jiant` was developed at [the 2018 JSALT Workshop](https://www.clsp.jhu.edu/workshops/18-workshop/) by [the General-Purpose Sentence Representation Learning](https://jsalt18-sentence-repl.github.io/) team and is maintained by [the NYU Machine Learning for Language Lab](https://wp.nyu.edu/ml2/people/), with help from [many outside collaborators](https://github.com/nyu-mll/jiant/graphs/contributors) (especially Google AI Language's [Ian Tenney](https://ai.google/research/people/IanTenney)).
-- `jiant` is built on [PyTorch](https://pytorch.org). It also uses many components from [AllenNLP](https://github.com/allenai/allennlp) and the HuggingFace Transformers [implementations](https://github.com/huggingface/transformers) for GPT, BERT and other transformer models.
-
-For a full system overview of `jiant` version 1.3.0, see https://arxiv.org/abs/2003.02249.
-
-## Getting Started
-
-To find the setup instructions for using jiant and to run a simple example demo experiment using data from GLUE, follow this [getting started tutorial](https://github.com/nyu-mll/jiant/tree/master/tutorials/setup_tutorial.md)!
-
-
-## Contributing
-Guidelines for contributing to `jiant` are available [here](CONTRIBUTING.md).
-
-
-## Official Documentation
-
-Our official documentation is here: https://jiant.info/documentation#/
-
-
-## Running
-To run an experiment, make a config file similar to `jiant/config/demo.conf` with your model configuration. In addition, you can use the `--overrides` flag to override specific variables. For example:
-```sh
-python main.py --config_file jiant/config/demo.conf \
-    --overrides "exp_name = my_exp, run_name = foobar, d_hid = 256"
-```
-will run the demo config, but output to `$JIANT_PROJECT_PREFIX/my_exp/foobar`.
- To run the demo config, you will have to set environment variables. The best way to achieve that is to follow the instructions in [user_config_template.sh](user_config_template.sh)
-*  `$JIANT_PROJECT_PREFIX`: the where the outputs will be saved.
-*  `$JIANT_DATA_DIR`: location of the saved data. This is usually the location of the GLUE data in a simple default setup.
-*  `$WORD_EMBS_FILE`: location of any word embeddings you want to use (not necessary when using ELMo, GPT, or BERT). You can download GloVe (840B) [here](http://nlp.stanford.edu/data/glove.840B.300d.zip) or fastText (2M) [here](https://dl.fbaipublicfiles.com/fasttext/vectors-english/crawl-300d-2M.vec.zip).
-To have `user_config.sh` run automatically, follow instructions in [scripts/export_from_bash.sh](export_from_bash.sh).
-
-
-## Suggested Citation
-
-If you use `jiant` in academic work, please cite it directly:
+# Reproduce Edge Probing
+The original edge probing folder provides lots of useful information, but after jiant migrated from v1 to v2, I went through some extra steps to rerun the scripts.
+Here are the revised steps you should follow:
 
 ```
-@misc{wang2019jiant,
-    author = {Alex Wang and Ian F. Tenney and Yada Pruksachatkun and Phil Yeres and Jason Phang and Haokun Liu and Phu Mon Htut and and Katherin Yu and Jan Hula and Patrick Xia and Raghu Pappagari and Shuning Jin and R. Thomas McCoy and Roma Patel and Yinghui Huang and Edouard Grave and Najoung Kim and Thibault F\'evry and Berlin Chen and Nikita Nangia and Anhad Mohananey and Katharina Kann and Shikha Bordia and Nicolas Patry and David Benton and Ellie Pavlick and Samuel R. Bowman},
-    title = {\texttt{jiant} 1.3: A software toolkit for research on general-purpose text understanding models},
-    howpublished = {\url{http://jiant.info/}},
-    year = {2019}
+conda activate jiant
+export JIANT_PROJECT_PREFIX=/home/wangchew/jiant-v1-legacy
+export JIANT_DATA_DIR=probing/data
+export WORD_EMBS_FILE=emb/crawl-300d-2MMM.vec
+```
+WORD_EMBS_FILE is just a placeholder since we don't need this for bert experiments
+
+## Env setup
+```conda env create -f environment.yml```
+
+## (Optional) Download and run with test data
+Prepare for test data. Scripts are modified to only process ud data and bert related part.
+```
+bash get_and_process_all_data.sh
+```
+You should now have probing/data/edges/dep_ewt folder to test
+
+## If you already have data in hand
+Tokenize it with retokenize_edge_data.py
+```
+python probing/retokenize_edge_data.py -t roberta-base probing/data/edges/conll_srl/test.json
+```
+
+## Automated scripts to run combination of trainings:
+Run using slurm cluster
+```
+sbatch slurm_submit.sh
+```
+Run using local machine. You can specify the config file and model
+```
+bash probing.sh -c probing/jiant/config/edgeprobe/edgeprobe_roberta.conf -m roberta-base
+```
+
+## 
+
+# Parameters & Training
+- transformers_output_mode: there is two mode: "top", and "mix"
+- transformers_max_layer: Maximum layer to return from BERT encoder. Layer 0 is wordpiece embeddings. bert_embeddings_mode will behave as if the BERT encoder is truncated at this layer, so 'top' will return this layer, and 'mix' will return a mix of all layers up to and including this layer. Set to -1 to use all layers. Used for probing experiments.
+```
+python main.py --config_file probing/jiant/config/edgeprobe/edgeprobe_bert.conf   -o "target_tasks=edges-,exp_name=ep_bert_demo,input_module=bert-base-uncased"
+```
+```
+python main.py --config_file probing/jiant/config/edgeprobe/edgeprobe_bert.conf   -o "target_tasks=edges-srl-conll,exp_name=ep_bert_srl_all_mix,input_module=bert-base-cased,transformers_output_mode=mix"
+```
+Train on mix of layer 1-4
+```
+python main.py --config_file probing/jiant/config/edgeprobe/edgeprobe_bert.conf   -o "target_tasks=edges-srl-conll,exp_name=ep_bert_srl_all_mix,input_module=bert-base-cased,transformers_output_mode=mix,transformers_max_layer=4"
+```
+
+### Only evaluate on the task
+```
+python main.py --config_file probing/jiant/config/edgeprobe/edgeprobe_bert.conf   -o "target_tasks=edges-srl-conll,exp_name=ep_bert_srl_conll_all_top,input_module=bert-base-cased,transformers_output_mode=top,do_target_task_training=0,do_pretrain=0,do_full_eval=1"
+```
+
+### Generate probing metrics
+```
+./scripts/edgeprobing/analyze_project.sh /path/to/project
+# Expected directory structure:
+# <project_dir>/
+#   <experiment_1>/
+#     run/
+#     vocab/
+#   <experiment_2>/
+#     run/
+#     vocab/
+#   (...)
+```
+# Edge Probing Config
+In the paper, they train the span pooling and MLP classifiers to extract information from the contextual vectors. Here is the settings from jiant-v1-legacy/jiant/config/defaults.conf
+
+Add more tasks here
+
+```
+// Edge-Probing Experiments //
+// See README for context.
+
+// Template: Not used for any single task, but extended per-task below.
+edges-tmpl {
+    span_classifier_loss_fn = "sigmoid"  // 'sigmoid' or 'softmax'
+    classifier_span_pooling = "attn"  // 'attn' or 'x,y'
+    classifier_hid_dim = 256
+    classifier_dropout = 0.3
+    pair_attn = 0
+
+    // Default iters; run 50k steps.
+    max_vals = 100
+    val_interval = 500
+}
+edges-tmpl-small = ${edges-tmpl} {
+    // 10k steps
+    val_interval = 100
+}
+edges-tmpl-large = ${edges-tmpl} {
+    // 250k steps
+    max_vals = 250
+    val_interval = 1000
+}
+
+edges-pos-ontonotes = ${edges-tmpl-large}
+edges-nonterminal-ontonotes = ${edges-tmpl-large}
+edges-ner-ontonotes = ${edges-tmpl-large}
+edges-srl-ontonotes = ${edges-tmpl-large}
+edges-coref-ontonotes = ${edges-tmpl-large}
+
+edges-dep-ud-ewt = ${edges-tmpl-large}
+
+edges-spr1 = ${edges-tmpl-small}
+edges-spr2 = ${edges-tmpl-small}
+edges-dpr = ${edges-tmpl-small}
+
+edges-rel-semeval = ${edges-tmpl-small}
+edges-rel-tacred = ${edges-tmpl}
+
+// new edge probing tasks
+edges-srl-conll = ${edges-tmpl-large}
+```
+# Edge Probing Details
+## Change Probing layer
+jiant-v1-legacy/jiant/huggingface_transformers_interface/modules.py
+```
+available_layers = hidden_states[: self.max_layer + 1]
+```
+
+## Change Probing Classifier (Head)
+jiant-v1-legacy/probing/jiant/modules/edge_probing.py
+```
+self.classifier = Classifier.from_params(clf_input_dim, task.n_classes, task_params)
+```
+## Experiments setup of original paper
+```
+function bert_mix_k_exp() {
+    # Run BERT with ELMo-style scalar mixing across the first K layers.
+    # Usage: bert_mix_k_exp <task_name> <bert_model_name> <k>
+    OVERRIDES="exp_name=bert-${2}-mix_${3}-${1}, run_name=run"
+    OVERRIDES+=", target_tasks=$1"
+    OVERRIDES+=", input_module=bert-$2"
+    OVERRIDES+=", transformers_output_mode=mix"
+    OVERRIDES+=", transformers_max_layer=${3}"
+    run_exp "jiant/config/edgeprobe/edgeprobe_bert.conf" "${OVERRIDES}"
+}
+
+function bert_at_k_exp() {
+    # Run BERT and probe layer K.
+    # Usage: bert_at_k_exp <task_name> <bert_model_name> <k>
+    OVERRIDES="exp_name=bert-${2}-at_${3}-${1}, run_name=run"
+    OVERRIDES+=", target_tasks=$1"
+    OVERRIDES+=", input_module=bert-$2"
+    OVERRIDES+=", transformers_output_mode=top"
+    OVERRIDES+=", transformers_max_layer=${3}"
+    run_exp "jiant/config/edgeprobe/edgeprobe_bert.conf" "${OVERRIDES}"
 }
 ```
-
-## Papers
-
-`jiant` has been used in these four papers so far:
-
-- [Can You Tell Me How to Get Past Sesame Street? Sentence-Level Pretraining Beyond Language Modeling](https://arxiv.org/abs/1812.10860) (formerly "Looking for ELMo's Friends")
-- [What do you learn from context? Probing for sentence structure in contextualized word representations](https://openreview.net/forum?id=SJzSgnRcKX) ("edge probing")
-- [BERT Rediscovers the Classical NLP Pipeline](https://arxiv.org/abs/1905.05950) ("BERT layer paper")
-- [Probing What Different NLP Tasks Teach Machines about Function Word Comprehension](https://arxiv.org/abs/1904.11544) ("function word probing")
-- [Investigating BERT’s Knowledge of Language: Five Analysis Methods with NPIs](https://arxiv.org/abs/1909.02597) ("BERT NPI paper")
-
-To exactly reproduce experiments from [the ELMo's Friends paper](https://arxiv.org/abs/1812.10860) use the [`jsalt-experiments`](https://github.com/jsalt18-sentence-repl/jiant/tree/jsalt-experiments) branch. That will contain a snapshot of the code as of early August, potentially with updated documentation.
-
-For the [edge probing paper](https://openreview.net/forum?id=SJzSgnRcKX) and the [BERT layer paper](https://arxiv.org/abs/1905.05950), see the [probing/](probing/) directory.
-
-For the [function word probing paper](https://arxiv.org/abs/1904.11544), use [this branch](https://github.com/nyu-mll/jiant/tree/naacl_probingpaper) and refer to the instructions in the [scripts/fwords/](https://github.com/nyu-mll/jiant/tree/naacl_probingpaper/scripts/fwords) directory.
-
-For the [BERT NPI paper](https://arxiv.org/abs/1909.02597) follow the instructions in [scripts/bert_npi](https://github.com/nyu-mll/jiant/tree/blimp-and-npi/scripts/bert_npi) on the [`blimp-and-npi`](https://github.com/nyu-mll/jiant/tree/blimp-and-npi) branch.
-
-## Getting Help
-
-Post an issue here on GitHub if you have any problems, and create a pull request if you make any improvements (substantial or cosmetic) to the code that you're willing to share.
-
-
-## Releases
-
-Releases are identified using git tags and distributed via PyPI for pip installation. After passing CI tests and creating a new git tag for a release, it can be uploaded to PyPI by running:
-
-```bash
-# create distribution
-python setup.py sdist bdist_wheel
-
-# upload to PyPI
-python -m twine upload dist/*
+# Output structure
+After running the python script, you should have following file structure.
 ```
 
-More details can be found in [setup.py](setup.py).
 
 
-## License
-
-This package is released under the [MIT License](LICENSE.md). The material in the allennlp_mods directory is based on [AllenNLP](https://github.com/allenai/allennlp), which was originally released under the Apache 2.0 license.
-
-
-## Acknowledgments
-
-- Part of the development of `jiant` took at the 2018 Frederick Jelinek Memorial Summer Workshop on Speech and Language Technologies, and was supported by Johns Hopkins University with unrestricted gifts from Amazon, Facebook, Google, Microsoft and Mitsubishi Electric Research Laboratories.
-- This work was made possible in part by a donation to NYU from Eric and Wendy Schmidt made
-by recommendation of the Schmidt Futures program, and by support from Intuit Inc.
-- We gratefully acknowledge the support of NVIDIA Corporation with the donation of a Titan V GPU used at NYU in this work.
-- Developer Alex Wang is supported by the National Science Foundation Graduate Research Fellowship Program under Grant
-No. DGE 1342536. Any opinions, findings, and conclusions or recommendations expressed in this
-material are those of the author(s) and do not necessarily reflect the views of the National Science
-Foundation.
-- Developer Yada Pruksachatkun is supported by the Moore-Sloan Data Science Environment as part of the NYU Data Science Services initiative.
-- Sam Bowman's work on `jiant` during Summer 2019 took place in his capacity as a visiting researcher at Google.
+# Original BERT Layer probing commit
+https://github.com/nyu-mll/jiant-v1-legacy/commit/44c6780738be1eee9868d35a0f2f96f42ba71aa7

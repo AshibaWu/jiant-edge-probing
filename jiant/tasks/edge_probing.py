@@ -387,7 +387,7 @@ register_task(
 )(EdgeProbingTask)
 
 
-# Dependency edge labeling on English Web Treebank (UD).
+# SRL on conll-2012.
 register_task(
     "edges-srl-conll",
     rel_path="edges/conll_srl",
@@ -397,4 +397,55 @@ register_task(
         "val": "development.json",
         "test": "test.json",
     },
+)(EdgeProbingTask)
+
+# DEP on conll-2012
+register_task(
+    "edges-dep-conll",
+    rel_path="edges/conll_dep",
+    label_file="labels.txt",
+    files_by_split={
+        "train": "train.json",
+        "val": "development.json",
+        "test": "test.json",
+    },
+)(EdgeProbingTask)
+
+# NER on conll-2012
+register_task(
+    "edges-ner-conll",
+    rel_path="edges/conll_ner",
+    label_file="labels.txt",
+    files_by_split={
+        "train": "train.json",
+        "val": "development.json",
+        "test": "test.json",
+    },
+    single_sided=True,
+)(EdgeProbingTask)
+
+# POS on conll-2012
+register_task(
+    "edges-pos-conll",
+    rel_path="edges/conll_pos",
+    label_file="labels.txt",
+    files_by_split={
+        "train": "train.json",
+        "val": "development.json",
+        "test": "test.json",
+    },
+    single_sided=True,
+)(EdgeProbingTask)
+
+# Consti on conll-2012
+register_task(
+    "edges-consti-conll",
+    rel_path="edges/conll_consti",
+    label_file="labels.txt",
+    files_by_split={
+        "train": "train.json",
+        "val": "development.json",
+        "test": "test.json",
+    },
+    single_sided=True,
 )(EdgeProbingTask)

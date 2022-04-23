@@ -1,7 +1,9 @@
 name: jiant
 channels:
     - pytorch
+    - conda-forge
 dependencies:
+    - jsonnet
     - python=3.6
     - pytorch=1.1.0
     - torchvision=0.2.1
@@ -45,3 +47,4 @@ dependencies:
         # This AllenNLP issue is relevant: https://github.com/allenai/allennlp/issues/3067
         - transformers==2.6.0
         - tokenizers==0.5.2
+        - overrides==3.1.0
